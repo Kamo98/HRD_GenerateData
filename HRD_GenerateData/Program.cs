@@ -12,13 +12,13 @@ namespace HRD_GenerateData
 		{
 			string login = "postgres";
 			string pass = "Ntcnbhjdfybt_01";
+			//Connection connect = Connection.get_instance(login, pass);
+			Connection connect = null;
 
-			Connection connect = Connection.get_instance(login, pass);
+			//connect.close_connection();
 
-			Test test = new Test(connect);
-			test.execute();
-
-			connect.close_connection();
+			GenPersonalCard gpc = new GenPersonalCard(connect);
+			gpc.execute();
 		}
 	}
 }
