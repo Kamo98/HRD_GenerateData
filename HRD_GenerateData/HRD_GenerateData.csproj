@@ -76,7 +76,9 @@
   <ItemGroup>
     <Compile Include="Connection.cs" />
     <Compile Include="GenDepartAndPos.cs" />
+    <Compile Include="GenHandbooks.cs" />
     <Compile Include="GenPersonalCard.cs" />
+    <Compile Include="GenTimeTracking.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test.cs" />

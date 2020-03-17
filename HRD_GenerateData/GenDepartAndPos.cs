@@ -27,7 +27,6 @@ namespace HRD_GenerateData
 			"Хирургическое отделение"
 		};
 
-
 		Connection connect;
 		public GenDepartAndPos(Connection conn)
 		{
@@ -54,5 +53,6 @@ namespace HRD_GenerateData
 		{
 
 		}
+
 	}
 }

@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Npgsql;
 
 namespace HRD_GenerateData
 {
 	class GenPersonalCard
 	{
+		int countPeople;
+
 		private string[] firstNameMan = new string[]
 		{
 			"Сергей", "Михаил", "Николай", "Трофим", "Тимофей",
@@ -60,6 +63,18 @@ namespace HRD_GenerateData
 		public GenPersonalCard(Connection conn)
 		{
 			connect = conn;
+			countPeople = 7;
+		}
+
+		public void clear ()
+		{
+			string strForCom = "delete from \"PersonalCard\"";
+
+			NpgsqlCommand command = new NpgsqlCommand(
+				strForCom,
+				connect.get_connect());
+
+			command.ExecuteNonQuery();
 		}
 
 		public void execute ()
@@ -67,29 +82,84 @@ namespace HRD_GenerateData
 			StreamWriter sw = new StreamWriter("personalCards.txt");
 			Random rand = new Random();
 
-			for (int i = 0; i < firstNameMan.Length; i++)
-				for (int j = 0; j < lastNameMan.Length; j++)
-					for (int k = 0; k < patronymicMan.Length; k++)
+			bool writeToDb = true;
+
+			string queryIns = "insert into \"PersonalCard\"" +
+						"(\"surname\"," +
+						" \"name\"," +
+						" \"otchestvo\", " +
+						"\"pk_marital_status\"," +
+						" \"pk_character_work\"," +
+						" \"pk_military_rank\"," +
+						" \"pk_category_military\"," +
+						" \"pk_stock_category\", " +
+						"\"birthday\"," +
+						" \"Characteristic\"," +
+						" \"INN\"," +
+						" \"SSN\"," +
+						" \"Labor_contract\"," +
+						" \"Serial_number\", " +
+						"\"Passport_date\"," +
+						" \"Vidan\"," +
+						" \"Home_date\", " +
+						"\"Propiska\"," +
+						" \"Fact_address\", " +
+						"\"Phone\"," +
+						"\"Birth_place\"," +
+						" \"Creation_date\", " +
+						"\"Gender\")" +
+						" values (";
+
+			for (int i = 0; i < countPeople; i++)
+				for (int j = 0; j < countPeople; j++)
+					for (int k = 0; k < countPeople; k++)
 					{
-						string strComIns = "('" + lastNameMan[j] + " "+  firstNameMan[i] + " " + patronymicMan[k] + "', ";
+						string strComIns = queryIns +
+						"'" + lastNameMan[j] + "', " +
+						"'" + firstNameMan[i] + "', " +
+						"'" + patronymicMan[k] + "', ";
 
 						get_persinal_data(rand, ref strComIns);
 
-						strComIns += "'М')\n";
-						sw.Write(strComIns);
+						strComIns += "'М')";
+						sw.Write(strComIns + "\n");
+
+						if (writeToDb)
+						{
+							NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
+							int count = command.ExecuteNonQuery();
+							if (count == 1)
+								Console.Out.Write("Строка вставлена\n");
+							else
+								Console.Out.Write("Строка НЕ вставлена\n");
+						}
+
 					}
 
-			for (int i = 0; i < firstNameWoman.Length; i++)
-				for (int j = 0; j < lastNameWoman.Length; j++)
-					for (int k = 0; k < patronymicWoman.Length; k++)
+			for (int i = 0; i < countPeople; i++)
+				for (int j = 0; j < countPeople; j++)
+					for (int k = 0; k < countPeople; k++)
 					{
-						string strComIns = "('" + lastNameWoman[j] + " " + firstNameWoman[i] + " " + patronymicWoman[k] + "', ";
-						
-						get_persinal_data(rand, ref strComIns);
-						strComIns += "'Ж')\n";
-						sw.Write(strComIns);
-					}
+						string strComIns = queryIns +
+						"'" + lastNameMan[j] + "', " +
+						"'" + firstNameMan[i] + "', " +
+						"'" + patronymicMan[k] + "', ";
 
+						get_persinal_data(rand, ref strComIns);
+
+						strComIns += "'Ж')";
+						NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
+						sw.Write(strComIns + "\n");
+
+						if (writeToDb)
+						{
+							int count = command.ExecuteNonQuery();
+							if (count == 1)
+								Console.Out.Write("Строка вставлена\n");
+							else
+								Console.Out.Write("Строка НЕ вставлена\n");
+						}
+					}
 			sw.Close();
 
 		}
@@ -97,12 +167,19 @@ namespace HRD_GenerateData
 
 		private void get_persinal_data(Random rand, ref string strComIns)
 		{
+			int maritalStatus = rand.Next(1, 7);
+			int militaryRank = rand.Next(1, 13);
+			int categoryMilitary = rand.Next(4, 13);
+			int stockCategory = rand.Next(1, 4);
+			strComIns += "'" + maritalStatus + "', " + "'" + 2 + "', " + 
+				"'" + militaryRank + "', " + "'" + categoryMilitary + "', " + "'" + stockCategory + "', "; 
+
 			int monthBirth = rand.Next(1, 13);
-			int dayBirth = rand.Next(1, daysInMonth[monthBirth - 1]);
+			int dayBirth = rand.Next(4, daysInMonth[monthBirth - 1]);
 			int yearBirth = rand.Next(minYear, maxYear);
 
-			strComIns += "'" + dayBirth + "." + monthBirth + "." + yearBirth + "', ";
-			strComIns += "'Характеристика', ";
+			strComIns += "'" + yearBirth + "-" + monthBirth + "-" + (dayBirth - 2) + "', ";
+			strComIns += "'', ";
 
 			//ИНН
 			string inn = rand.Next(111111, 999999).ToString() + rand.Next(111111, 999999).ToString();
@@ -120,35 +197,35 @@ namespace HRD_GenerateData
 			strComIns += "'" + seriaNumPasp + "', ";
 
 			int monthPasp = rand.Next(1, 13);
-			int dayPasp = rand.Next(1, daysInMonth[monthBirth - 1]);
+			int dayPasp = rand.Next(4, daysInMonth[monthBirth - 1]);
 			int yearPasp = yearBirth + 20;
-			strComIns += "'" + dayPasp + "." + monthPasp + "." + yearPasp + "', ";
+			strComIns += "'" + yearPasp + "-" + monthPasp + "-" + (dayPasp - 2) + "', ";
 
-			strComIns += "'ГУ МВД по Алтайскому краю',";
+			strComIns += "'ГУ МВД по Алтайскому краю', ";
 
 			int monthRegistr = rand.Next(1, 13);
-			int dayRegistr = rand.Next(1, daysInMonth[monthBirth - 1]);
+			int dayRegistr = rand.Next(4, daysInMonth[monthBirth - 1]);
 			int yearRegistr = yearBirth + 21;
 
-			strComIns += "'" + dayRegistr + "." + monthRegistr + "." + yearRegistr + "', ";
+			strComIns += "'" + yearRegistr + "-" + monthRegistr + "-" + (dayRegistr - 2) + "', ";
 
 			//Адреса
-			string addressRegistr = "";
+			string addressRegistr = "Алтайский край, г. Барнаул, ул Ленина, д. 66, кв 13";
 			strComIns += "'" + addressRegistr + "', ";
 
-			string addressFact = "";
+			string addressFact = addressRegistr;
 			strComIns += "'" + addressFact + "', ";
 
 			string phone = "+7" + rand.Next(11111, 99999) + rand.Next(11111, 99999);
 			strComIns += "'" + phone + "', ";
 
-			string placeOfBirth = "";
+			string placeOfBirth = addressRegistr;
 			strComIns += "'" + placeOfBirth + "', ";
 
 			int monthCreate = rand.Next(1, 13);
-			int dayCreate = rand.Next(1, daysInMonth[monthBirth - 1]);
+			int dayCreate = rand.Next(4, daysInMonth[monthBirth - 1]);
 			int yearCreate = yearBirth + 23;
-			strComIns += "'" + dayCreate + "." + monthCreate + "." + yearCreate + "', ";
+			strComIns += "'" + yearCreate + "-" + monthCreate + "-" + (dayCreate-2) + "', ";
 
 
 		}

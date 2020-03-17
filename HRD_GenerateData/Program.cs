@@ -12,13 +12,26 @@ namespace HRD_GenerateData
 		{
 			string login = "postgres";
 			string pass = "Ntcnbhjdfybt_01";
-			//Connection connect = Connection.get_instance(login, pass);
-			Connection connect = null;
+			Connection connect = Connection.get_instance(login, pass);
+			//Connection connect = null;
 
-			//connect.close_connection();
+			//GenPersonalCard gpc = new GenPersonalCard(connect);
+			//gpc.execute();
+			//gpc.clear();
 
-			GenPersonalCard gpc = new GenPersonalCard(connect);
-			gpc.execute();
+			//GenTimeTracking gtt = new GenTimeTracking(connect);
+
+			//GenHandbooks gh = new GenHandbooks(connect);
+			//gh.addMarkTimeTracking();
+
+			(new Test(connect)).ecec_read();
+			//(new Test(connect)).get_all_tables();
+			//(new Test(connect)).correct_db();
+
+
+
+			connect.close_connection();
+
 		}
 	}
 }
