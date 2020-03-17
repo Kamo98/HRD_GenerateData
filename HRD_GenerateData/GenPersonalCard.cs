@@ -63,7 +63,7 @@ namespace HRD_GenerateData
 		public GenPersonalCard(Connection conn)
 		{
 			connect = conn;
-			countPeople = 7;
+			countPeople = 4;
 		}
 
 		public void clear ()
@@ -80,9 +80,12 @@ namespace HRD_GenerateData
 		public void execute ()
 		{
 			StreamWriter sw = new StreamWriter("personalCards.txt");
+			StreamWriter swDate = new StreamWriter("datesCreating.txt");
 			Random rand = new Random();
 
 			bool writeToDb = true;
+			bool writeToFile = true;
+			bool writeLog = true;
 
 			string queryIns = "insert into \"PersonalCard\"" +
 						"(\"surname\"," +
@@ -110,54 +113,87 @@ namespace HRD_GenerateData
 						"\"Gender\")" +
 						" values (";
 
+
+
+			const int maxDeltaDays = 30 * 24;
+			int deltaDays = maxDeltaDays / ((countPeople * countPeople * countPeople));
+			DateTime dateCreating = GenTimeTracking.curDate.Subtract(new TimeSpan(maxDeltaDays, 0, 0, 0, 0));
+
+
+			const int maxPersInOrder = 6;
+			int curCount = rand.Next(1, maxPersInOrder+1);
+			int countPers = 0;
+
 			for (int i = 0; i < countPeople; i++)
 				for (int j = 0; j < countPeople; j++)
 					for (int k = 0; k < countPeople; k++)
 					{
+						countPers++;
+
+						if (countPers % curCount == 0)
+						{
+							curCount = rand.Next(1, maxPersInOrder + 1);
+							dateCreating += new TimeSpan(deltaDays, 0, 0, 0, 0);
+						}
+
 						string strComIns = queryIns +
 						"'" + lastNameMan[j] + "', " +
 						"'" + firstNameMan[i] + "', " +
 						"'" + patronymicMan[k] + "', ";
 
-						get_persinal_data(rand, ref strComIns);
+						get_persinal_data(rand, ref strComIns, dateCreating);
 
 						strComIns += "'М')";
-						sw.Write(strComIns + "\n");
+
+						if (writeToFile)
+							sw.Write(strComIns + "\n");
 
 						if (writeToDb)
 						{
 							NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
 							int count = command.ExecuteNonQuery();
-							if (count == 1)
-								Console.Out.Write("Строка вставлена\n");
-							else
-								Console.Out.Write("Строка НЕ вставлена\n");
+							if (writeLog)
+								if (count == 1)
+									Console.Out.Write("Строка вставлена\n");
+								else
+									Console.Out.Write("Строка НЕ вставлена\n");
 						}
-
+						
 					}
 
 			for (int i = 0; i < countPeople; i++)
 				for (int j = 0; j < countPeople; j++)
 					for (int k = 0; k < countPeople; k++)
 					{
+						countPers++;
+
+						if (countPers % curCount == 0)
+						{
+							curCount = rand.Next(1, maxPersInOrder+1);
+							dateCreating += new TimeSpan(deltaDays, 0, 0, 0, 0);
+						}
+
 						string strComIns = queryIns +
 						"'" + lastNameMan[j] + "', " +
 						"'" + firstNameMan[i] + "', " +
 						"'" + patronymicMan[k] + "', ";
 
-						get_persinal_data(rand, ref strComIns);
+						get_persinal_data(rand, ref strComIns, dateCreating);
 
 						strComIns += "'Ж')";
-						NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
-						sw.Write(strComIns + "\n");
+
+						if (writeToFile)
+							sw.Write(strComIns + "\n");
 
 						if (writeToDb)
 						{
+							NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
 							int count = command.ExecuteNonQuery();
-							if (count == 1)
-								Console.Out.Write("Строка вставлена\n");
-							else
-								Console.Out.Write("Строка НЕ вставлена\n");
+							if (writeLog)
+								if (count == 1)
+									Console.Out.Write("Строка вставлена\n");
+								else
+									Console.Out.Write("Строка НЕ вставлена\n");
 						}
 					}
 			sw.Close();
@@ -165,7 +201,7 @@ namespace HRD_GenerateData
 		}
 
 
-		private void get_persinal_data(Random rand, ref string strComIns)
+		private void get_persinal_data(Random rand, ref string strComIns, DateTime dateCreating)
 		{
 			int maritalStatus = rand.Next(1, 7);
 			int militaryRank = rand.Next(1, 13);
@@ -221,11 +257,14 @@ namespace HRD_GenerateData
 
 			string placeOfBirth = addressRegistr;
 			strComIns += "'" + placeOfBirth + "', ";
+			
 
-			int monthCreate = rand.Next(1, 13);
-			int dayCreate = rand.Next(4, daysInMonth[monthBirth - 1]);
-			int yearCreate = yearBirth + 23;
-			strComIns += "'" + yearCreate + "-" + monthCreate + "-" + (dayCreate-2) + "', ";
+			//DateTime dateCreate = GenTimeTracking.curDate.Subtract(new TimeSpan(rand.Next(60, 30*24), 0,0,0,0));
+
+			//int monthCreate = rand.Next(1, 13);
+			//int dayCreate = rand.Next(4, daysInMonth[monthBirth - 1]);
+			//int yearCreate = yearBirth + 23;
+			strComIns += "'" + dateCreating.Year + "-" + dateCreating.Month + "-" + dateCreating.Day + "', ";
 
 
 		}

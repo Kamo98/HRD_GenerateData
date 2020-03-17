@@ -10,9 +10,14 @@ namespace HRD_GenerateData
 {
 	class GenTimeTracking
 	{
+		public static DateTime curDate = new DateTime(2019, 12, 20);
+
 		Connection connect;
 		List<int> idPersonals = new List<int>();
 		List<DateTime> createDates = new List<DateTime>();
+
+		//Для выборки шифров явки/неявки и ключей
+		Dictionary<string, int> markTT2key = new Dictionary<string, int>();
 
 		int limitPersinal = 10;
 		int offsetPersonal = 0;
@@ -21,8 +26,10 @@ namespace HRD_GenerateData
 		{
 			connect = conn;
 			get_personal();
+			get_mark_tt();
 		}
 
+		//Получение id сотрудников и дат создания их карточек
 		private void get_personal()
 		{
 			string strCom = "select \"pk_personal_card\", \"Creation_date\" from \"PersonalCard\" " +
@@ -35,9 +42,24 @@ namespace HRD_GenerateData
 				{
 					idPersonals.Add(rec.GetInt32(0));
 					createDates.Add((DateTime)rec.GetValue(1));
+					Console.Write((curDate - (DateTime)rec.GetValue(1)).TotalDays / 30 + "\n");
 				}
 			reader.Close();
 		}
+
+		//Получение id и шифров отметок о явке/неявке
+		private void get_mark_tt()
+		{
+			string strCom = "select \"pk_mark_time_tracking\", \"ShortName\" from \"MarkTimeTracking\"";
+			NpgsqlCommand command = new NpgsqlCommand(strCom, connect.get_connect());
+
+			NpgsqlDataReader reader = command.ExecuteReader();
+			if (reader.HasRows)
+				foreach (DbDataRecord rec in reader)
+					markTT2key[rec.GetString(1)] = rec.GetInt32(0);
+			reader.Close();
+		}
+
 
 		public void execute()
 		{
@@ -55,6 +77,8 @@ namespace HRD_GenerateData
 
 
 		}
+
+		//private List<int> work
 
 
 		private void gen_str_top_pers()

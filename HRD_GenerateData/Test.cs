@@ -39,13 +39,16 @@ namespace HRD_GenerateData
 			//string strCom = "select * from \"Unit\" u, \"Position\" p where p.\"pk_unit\" = 2 and u.\"pk_unit\" = p.\"pk_unit\"";
 
 			//string strCom = "select \"pk_personal_card\", \"birthday\" from \"PersonalCard\"";
-			string strCom = "select * from \"MarkTimeTracking\"";
-			
+			//string strCom = "select \"Creation_date\" from \"PersonalCard\" group by \"Creation_date\" order by \"Creation_date\"";
+			//string strCom = "select * from \"Position\"";
+			//string strCom = "select pg_get_serial_sequence('Order', 'pk_order');";
+			//string strCom = "select pg_get_serial_sequence(PersonalCard, pk_personal_card)";
+			//string strCom = "select currval(PersonalCard_pk_personal_card_seq)";
 
-			NpgsqlCommand command = new NpgsqlCommand(
-				strCom,
-				connect.get_connect()
-				);
+			//Вывод строк приказа
+			string strCom = "select o.\"nomer\", s.\"Move_date\", s.\"Number_work_doc\", d.\"Name\" from \"String_order\" s, \"Order\" o, \"PeriodPosition\" p, \"Position\" d where p.\"pk_move_order\" = s.\"pk_string_order\" AND s.\"pk_order\" = o.\"pk_order\" AND d.\"pk_position\" = p.\"pk_position\"";
+			
+			NpgsqlCommand command = new NpgsqlCommand(strCom,connect.get_connect());
 
 
 			NpgsqlDataReader reader = command.ExecuteReader();
@@ -107,6 +110,7 @@ namespace HRD_GenerateData
 			//string strForCom = "ALTER TABLE \"Characteristic\" ADD CONSTRAINT \"Relationship121\" FOREIGN KEY (\"pk_personal_card\") REFERENCES \"PersonalCard\" (\"pk_personal_card\") ON DELETE RESTRICT ON UPDATE RESTRICT";
 			//string strForCom = "ALTER TABLE \"Characteristic\" ADD CONSTRAINT \"PK_Characteristic\" PRIMARY KEY (\"pk_characteristic\")";
 			string strForCom = "";
+			//string strForCom = "";
 
 			NpgsqlCommand command = new NpgsqlCommand(
 				strForCom,

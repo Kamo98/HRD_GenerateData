@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Data.Common;
 
 namespace HRD_GenerateData
 {
@@ -13,11 +14,16 @@ namespace HRD_GenerateData
 
 		Connection connect;
 
+		public static string recruitment = "Приём";
+		public static string dismissal = "Увольнение";
+		public static string moveWork = "Перевод";
+
+
 		private string[] orders = new string[]
 		{
-			"Приём",
-			"Перевод",
-			"Увольнение"
+			recruitment,
+			dismissal,
+			moveWork
 		};
 		
 		public GenHandbooks(Connection conn)
@@ -25,6 +31,22 @@ namespace HRD_GenerateData
 			connect = conn;
 		}
 
+
+		public int get_id_type_order(string type)
+		{
+			string strCom = "select \"pk_type_order\" from \"TypeOrder\" where \"Name\" = '" + type + "'";
+
+			NpgsqlCommand command = new NpgsqlCommand(strCom, connect.get_connect());
+			NpgsqlDataReader reader = command.ExecuteReader();
+
+			int id = 0;
+			foreach (DbDataRecord rec in reader)
+				id = rec.GetInt32(0);
+
+			reader.Close();
+
+			return id;
+		}
 
 		public void addMarkTimeTracking ()
 		{

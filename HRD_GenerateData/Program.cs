@@ -16,10 +16,14 @@ namespace HRD_GenerateData
 			//Connection connect = null;
 
 			//GenPersonalCard gpc = new GenPersonalCard(connect);
-			//gpc.execute();
 			//gpc.clear();
+			//gpc.execute();
 
 			//GenTimeTracking gtt = new GenTimeTracking(connect);
+
+			//GenOrders gord = new GenOrders(connect);
+			//gord.clear();
+			//gord.execute();
 
 			//GenHandbooks gh = new GenHandbooks(connect);
 			//gh.addMarkTimeTracking();
