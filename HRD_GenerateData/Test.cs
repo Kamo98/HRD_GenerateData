@@ -34,6 +34,7 @@ namespace HRD_GenerateData
 
 		public void ecec_read()
 		{
+			StreamWriter sw = new StreamWriter("out.txt");
 
 			//Запрос должностей
 			//string strCom = "select * from \"Unit\" u, \"Position\" p where p.\"pk_unit\" = 2 and u.\"pk_unit\" = p.\"pk_unit\"";
@@ -46,8 +47,9 @@ namespace HRD_GenerateData
 			//string strCom = "select currval(PersonalCard_pk_personal_card_seq)";
 
 			//Вывод строк приказа
-			string strCom = "select o.\"nomer\", s.\"Move_date\", s.\"Number_work_doc\", d.\"Name\" from \"String_order\" s, \"Order\" o, \"PeriodPosition\" p, \"Position\" d where p.\"pk_move_order\" = s.\"pk_string_order\" AND s.\"pk_order\" = o.\"pk_order\" AND d.\"pk_position\" = p.\"pk_position\"";
-			
+			//string strCom = "select o.\"nomer\", s.\"Move_date\", s.\"Number_work_doc\", d.\"Name\" from \"String_order\" s, \"Order\" o, \"PeriodPosition\" p, \"Position\" d where p.\"pk_move_order\" = s.\"pk_string_order\" AND s.\"pk_order\" = o.\"pk_order\" AND d.\"pk_position\" = p.\"pk_position\"";
+			string strCom = "select * from \"TimeTracking\"";
+
 			NpgsqlCommand command = new NpgsqlCommand(strCom,connect.get_connect());
 
 
@@ -61,11 +63,16 @@ namespace HRD_GenerateData
 					rec.GetValues(obj);
 
 					foreach (object o in obj)
+					{
 						Console.Write(o.ToString().Trim() + "   ");
+						sw.Write(o.ToString().Trim() + "   ");
+					}
 					Console.Write("\n");
+					sw.Write("\n");
 				}
 			}
 			reader.Close();
+			sw.Close();
 		}
 
 		public void get_all_tables()
