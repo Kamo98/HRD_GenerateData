@@ -1,0 +1,13 @@
+strComIns = "insert into \"String_order\" " +
+	"(\"pk_order\", \"Number_work_doc\", \"Work_doc_date\",  \"Reason\") " +
+	"values ('" + idOrderPriem + "', '" +
+	numberWork + "', '" +
+	date.Year + "-" + date.Month + "-" + date.Day + 
+	"', 'Основание') RETURNING \"pk_string_order\"";
+
+command = new NpgsqlCommand(strComIns, connect.get_connect());
+NpgsqlDataReader reader2 = command.ExecuteReader();
+int idStrRecruitment = -1;
+foreach (DbDataRecord rec in reader2)
+	idStrRecruitment = rec.GetInt32(0);
+reader2.Close();

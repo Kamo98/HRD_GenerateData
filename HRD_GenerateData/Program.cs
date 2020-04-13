@@ -19,9 +19,9 @@ namespace HRD_GenerateData
 			//gpc.clear();
 			//gpc.execute();
 
-			GenTimeTracking gtt = new GenTimeTracking(connect);
-			gtt.clear();
-			gtt.execute();
+			//GenTimeTracking gtt = new GenTimeTracking(connect);
+			//gtt.clear();
+			//gtt.execute();
 
 			//GenOrders gord = new GenOrders(connect);
 			//gord.clear();

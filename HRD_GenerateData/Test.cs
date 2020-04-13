@@ -37,18 +37,33 @@ namespace HRD_GenerateData
 			StreamWriter sw = new StreamWriter("out.txt");
 
 			//Запрос должностей
-			//string strCom = "select * from \"Unit\" u, \"Position\" p where p.\"pk_unit\" = 2 and u.\"pk_unit\" = p.\"pk_unit\"";
+			//string strCom = "select * from \"Unit\" u, \"Position\" p where p.\"pk_unit\" = '12' and u.\"pk_unit\" = p.\"pk_unit\"";
 
-			//string strCom = "select \"pk_personal_card\", \"birthday\" from \"PersonalCard\"";
+			//string strCom = "select \"pk_personal_card\", \"Creation_date\" from \"PersonalCard\"";
+		
+			///
+
+			//string strCom = "select \"pk_personal_card\", \"DataFrom\", \"DateTo\", \"pk_move_order\", t.\"Name\", \"pk_fire_order_string\", d.\"Name\" " +
+			//	"from \"PeriodPosition\" p, \"Position\" d, \"String_order\" s, \"Order\" o, \"TypeOrder\" t " +
+			//	"where d.\"pk_position\" = p.\"pk_position\" and p.\"pk_move_order\" = s.\"pk_string_order\" and o.\"pk_order\" = s.\"pk_order\" " +
+			//	"and t.\"pk_type_order\" = o.\"pk_type_order\" and \"pk_personal_card\" = '1400'";
+
+
+			string strCom = "select c.\"surname\", c.\"name\", c.\"otchestvo\", p.\"pk_fire_order_string\", o.\"data_order\"" +
+				" from \"PeriodPosition\" p, \"PersonalCard\" c, \"String_order\" s, \"Order\" o" +
+				" where p.\"pk_personal_card\" = c.\"pk_personal_card\" and p.\"pk_fire_order_string\" = s.\"pk_string_order\" " +
+				" and o.\"pk_order\" = s.\"pk_order\" and p.\"pk_fire_order_string\" IS NOT NULL";
+
 			//string strCom = "select \"Creation_date\" from \"PersonalCard\" group by \"Creation_date\" order by \"Creation_date\"";
-			//string strCom = "select * from \"Position\"";
+			//string strCom = "select \"nomer\", \"data_order\", \"Name\" from \"Order\" o, \"TypeOrder\" t where o.\"pk_type_order\" = t.\"pk_type_order\"";
+			//string strCom = "select * from \"String_order\" where \"pk_order\"=100";
 			//string strCom = "select pg_get_serial_sequence('Order', 'pk_order');";
 			//string strCom = "select pg_get_serial_sequence(PersonalCard, pk_personal_card)";
 			//string strCom = "select currval(PersonalCard_pk_personal_card_seq)";
 
 			//Вывод строк приказа
 			//string strCom = "select o.\"nomer\", s.\"Move_date\", s.\"Number_work_doc\", d.\"Name\" from \"String_order\" s, \"Order\" o, \"PeriodPosition\" p, \"Position\" d where p.\"pk_move_order\" = s.\"pk_string_order\" AND s.\"pk_order\" = o.\"pk_order\" AND d.\"pk_position\" = p.\"pk_position\"";
-			string strCom = "select * from \"TimeTracking\"";
+			//string strCom = "select * from \"pg_shadow\"";
 
 			NpgsqlCommand command = new NpgsqlCommand(strCom,connect.get_connect());
 
