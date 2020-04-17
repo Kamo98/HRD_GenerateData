@@ -22,17 +22,17 @@ namespace HRD_GenerateData
 
 		Connection connect;
 		List<int> idPersonals = new List<int>();        //id сотрудника 
-		List<int> pers2Unit = new List<int>();			//id подразделения
+		//Dictionary<int, int> pers2Unit = new Dictionary<int, int>();			//id подразделения
 		List<DateTime> createDates = new List<DateTime>();
-		List<int> idUnits = new List<int>();
-		List<CharactPers> charactPers = new List<CharactPers>();
+		//List<int> idUnits = new List<int>();
+		Dictionary<int, CharactPers> charactPers = new Dictionary<int, CharactPers>();
 
 
 		//Для выборки шифров явки/неявки и ключей
 		Dictionary<string, int> markTT2key = new Dictionary<string, int>();
 
 		//Для ограничения выборки сотрудников
-		int limitPersinal = 10;
+		int limitPersinal = 128;
 		int offsetPersonal = 0;
 
 		public GenTimeTracking(Connection conn)
@@ -40,7 +40,7 @@ namespace HRD_GenerateData
 			connect = conn;
 			get_personal();
 			get_mark_tt();
-			get_id_units();
+			//get_id_units();
 		}
 
 		//Получение id сотрудников и дат создания их карточек, а также подразделений, в которых они работают
@@ -62,28 +62,29 @@ namespace HRD_GenerateData
 					else if (r >= 9)
 						curCharact = CharactPers.Sick;
 
-					charactPers.Add(curCharact);
+					int id = rec.GetInt32(0);
+					charactPers.Add(id, curCharact);
 
-					idPersonals.Add(rec.GetInt32(0));
+					idPersonals.Add(id);
 					createDates.Add((DateTime)rec.GetValue(1));
 					//Console.Write((curDate - (DateTime)rec.GetValue(1)).TotalDays / 30 + "\n");
 				}
 			reader.Close();
 
-			foreach (int idP in idPersonals)
-			{
-				strCom = "select u.\"pk_unit\" from \"PeriodPosition\" p, \"Position\" d, \"Unit\" u " +
-				"where p.\"pk_personal_card\" = '" + idP + "' AND p.\"DateTo\" IS NULL AND p.\"pk_position\" = d.\"pk_position\" AND d.\"pk_unit\" = u.\"pk_unit\"";
+			//foreach (int idP in idPersonals)
+			//{
+			//	strCom = "select u.\"pk_unit\" from \"PeriodPosition\" p, \"Position\" d, \"Unit\" u " +
+			//	"where p.\"pk_personal_card\" = '" + idP + "' AND p.\"DateTo\" IS NULL AND p.\"pk_position\" = d.\"pk_position\" AND d.\"pk_unit\" = u.\"pk_unit\"";
 
-				command = new NpgsqlCommand(strCom, connect.get_connect());
-				reader = command.ExecuteReader();
-				if (reader.HasRows)
-					foreach (DbDataRecord rec in reader)
-					{
-						pers2Unit.Add(rec.GetInt32(0));
-					}
-				reader.Close();
-			}
+			//	command = new NpgsqlCommand(strCom, connect.get_connect());
+			//	reader = command.ExecuteReader();
+			//	if (reader.HasRows)
+			//		foreach (DbDataRecord rec in reader)
+			//		{
+			//			pers2Unit.Add(idP, rec.GetInt32(0));
+			//		}
+			//	reader.Close();
+			//}
 
 			
 		}
@@ -102,17 +103,17 @@ namespace HRD_GenerateData
 		}
 
 		//получить список id всех подразделений
-		private void get_id_units()
-		{
-			string strCom = "select \"pk_unit\" from \"Unit\"";
-			NpgsqlCommand command = new NpgsqlCommand(strCom, connect.get_connect());
+		//private void get_id_units()
+		//{
+		//	string strCom = "select \"pk_unit\" from \"Unit\"";
+		//	NpgsqlCommand command = new NpgsqlCommand(strCom, connect.get_connect());
 
-			NpgsqlDataReader reader = command.ExecuteReader();
-			if (reader.HasRows)
-				foreach (DbDataRecord rec in reader)
-					idUnits.Add(rec.GetInt32(0));
-			reader.Close();
-		}
+		//	NpgsqlDataReader reader = command.ExecuteReader();
+		//	if (reader.HasRows)
+		//		foreach (DbDataRecord rec in reader)
+		//			idUnits.Add(rec.GetInt32(0));
+		//	reader.Close();
+		//}
 
 
 		public void clear()
@@ -152,102 +153,151 @@ namespace HRD_GenerateData
 			Random rand = new Random();
 			int countPers = createDates.Count;
 			DateTime date = new DateTime(createDates[0].Year, createDates[0].Month, 1);
-			List<KeyValuePair<int, bool>> persCurWork = new List<KeyValuePair<int, bool>>();        //Сотрудники который на дату date уже работают
-			HashSet<int> curUnits = new HashSet<int>();			//id подразделений, шапки табеля для которых сейчас необходимы
-
-			int indPers = 0;
 
 
-			//Сгенерировать шапки табелей начиная с самого первого принятого сотрудника и до curDate
-			for (; date <= curDate; date = next_month(date))
+			DateTime endDate = new DateTime(2018, 8, 30);
+
+			//Сгенерировать табели начиная с самого первого принятого сотрудника и до curDate
+			for (; date <= endDate; date = next_month(date))
 			{
 				DateTime dateFrom = new DateTime(date.Year, date.Month, 1);
 				DateTime dateTo = next_month(date) - new TimeSpan(1, 0, 0, 0);
 
-
 				Dictionary<int, int> unit2idTT = new Dictionary<int, int>();    //Для хранения id шапок текущего месяца
 
-				//Добавляем в общий список сотрудников, которые начали работу в текущем месяце
-				while (indPers < countPers && createDates[indPers] < dateTo)
-				{
-					persCurWork.Add(new KeyValuePair<int, bool>(indPers, false));
-					curUnits.Add(pers2Unit[indPers]);
-					indPers++;
-				}
 
-				//Для каждого подразделения создаётся отдельная шапка табеля
-				foreach (int unit in curUnits)
-				{
-					string queryIns = "insert into \"TimeTracking\" " +
-					"(\"nomer\", " +
-					"\"date_sostav\", " +
-					"\"from\"," +
-					" \"to\"," +
-					" \"pk_unit\")" +
-					" values ('" +
-					rand.Next(10000000, 100000000).ToString() + "', '" +
-					dateTo.Year + "-" + dateTo.Month + "-" + dateTo.Day + "', '" +
-					dateFrom.Year + "-" + dateFrom.Month + "-" + dateFrom.Day + "', '" +
-					dateTo.Year + "-" + dateTo.Month + "-" + dateTo.Day + "', '" +
-					unit + "') RETURNING \"pk_time_tracking\"";
+				Dictionary<int, Dictionary<int, KeyValuePair<DateTime, DateTime>>> persAndUnits = get_pers_period(dateFrom, dateTo);
 
-					int idTT = -1;
-					if (writeToDb)
+
+				//Пройти по всем сотрудникам, работавшим в этот период
+				foreach (KeyValuePair<int, Dictionary<int, KeyValuePair<DateTime, DateTime>>> pr in persAndUnits)
+				{
+					int pers = pr.Key;
+					//Пройти по всем подразделениям, в которых они работил в этот период
+					foreach (KeyValuePair<int, KeyValuePair<DateTime, DateTime>> pr2 in pr.Value)
 					{
-						NpgsqlCommand command = new NpgsqlCommand(queryIns, connect.get_connect());
-						NpgsqlDataReader reader = command.ExecuteReader();
-						foreach (DbDataRecord rec in reader)
-							idTT = rec.GetInt32(0);
-						reader.Close();
+						dateFrom = new DateTime(date.Year, date.Month, 1);
+						dateTo = next_month(date) - new TimeSpan(1, 0, 0, 0);
+
+						int unit = pr2.Key;
+
+						//Проверим, есть ли уже шапка для этого подразделения
+						if (!unit2idTT.ContainsKey(unit))
+						{
+							//Если нет, то создадим
+							string queryIns = "insert into \"TimeTracking\" " +
+								"(\"nomer\", " +
+								"\"date_sostav\", " +
+								"\"from\"," +
+								" \"to\"," +
+								" \"pk_unit\")" +
+								" values ('" +
+								rand.Next(10000000, 100000000).ToString() + "', '" +
+								dateTo.Year + "-" + dateTo.Month + "-" + dateTo.Day + "', '" +
+								dateFrom.Year + "-" + dateFrom.Month + "-" + dateFrom.Day + "', '" +
+								dateTo.Year + "-" + dateTo.Month + "-" + dateTo.Day + "', '" +
+								unit + "') RETURNING \"pk_time_tracking\"";
+
+							int idTT = -1;
+							if (writeToDb)
+							{
+								NpgsqlCommand command = new NpgsqlCommand(queryIns, connect.get_connect());
+								NpgsqlDataReader reader = command.ExecuteReader();
+								foreach (DbDataRecord rec in reader)
+									idTT = rec.GetInt32(0);
+								reader.Close();
+							}
+							unit2idTT.Add(unit, idTT);     //Сопоставить подразделение с шапкой
+						}
+
+						//Создадть строку для сотрудника в табеле
+
+						string queryIns1 = "insert into \"StringTimeTracking\" " +
+						"(\"pk_personal_card\", " +
+						"\"pk_time_tracking\"" +
+						") values ('" +
+						pers + "', '" +
+						unit2idTT[unit] +
+						"') RETURNING \"pk_string_time_tracking\"";
+
+						int idString = -1;
+						if (writeToDb)
+						{
+							NpgsqlCommand command = new NpgsqlCommand(queryIns1, connect.get_connect());
+							NpgsqlDataReader reader = command.ExecuteReader();
+							foreach (DbDataRecord rec in reader)
+								idString = rec.GetInt32(0);
+							reader.Close();
+						}
+
+						if (writeToFile)
+							sw.Write("\t" + queryIns1 + "\n");
+
+
+						DateTime dF_Fact = pr2.Value.Key;
+						DateTime dT_Fact = pr2.Value.Value;
+						if (dF_Fact > dateFrom)
+							dateFrom = dF_Fact;
+						if (dT_Fact < dateTo)
+							dateTo = dT_Fact - new TimeSpan(1, 0, 0, 0);
+
+						
+						gen_str_pers(idString, pers, dateFrom, dateTo, writeToDb, writeToFile, sw);
 					}
-					unit2idTT[unit] = idTT;     //Сопоставить подразделение с шапкой
-
-					if (writeToFile)
-						sw.Write(queryIns + "\n");
 				}
-
-				
-
-				
-				//Пройтись по списку сотрудников, работающих на данный момент и создать для них строки в табеле
-				for (int i = 0; i < persCurWork.Count; i++)
-				{
-					//pers.Value == false, значит нужно заполнять не с начала месяца, а с даты приёма сотрудника
-					KeyValuePair<int, bool> pers = persCurWork[i];
-					int p = pers.Key;
-
-					string queryIns = "insert into \"StringTimeTracking\" " +
-					"(\"pk_personal_card\", " +
-					"\"pk_time_tracking\"" +
-					") values ('" + 
-					idPersonals[p] + "', '" +
-					unit2idTT[pers2Unit[p]] +
-					"') RETURNING \"pk_string_time_tracking\"";
-
-					int idString = -1;
-					if (writeToDb)
-					{
-						NpgsqlCommand command = new NpgsqlCommand(queryIns, connect.get_connect());
-						NpgsqlDataReader reader = command.ExecuteReader();
-						foreach (DbDataRecord rec in reader)
-							idString = rec.GetInt32(0);
-						reader.Close();
-					}
-
-					if (writeToFile)
-						sw.Write("\t" + queryIns + "\n");
-
-					gen_str_pers(idString, p, pers.Value == true ? dateFrom : createDates[p], dateTo, writeToDb, writeToFile, sw);
-					persCurWork[i] = new KeyValuePair<int, bool>(persCurWork[i].Key, true);
-				}
-
 			}
+		}
+
+
+		public Dictionary<int, Dictionary<int, KeyValuePair<DateTime, DateTime>>> get_pers_period (DateTime dateFrom, DateTime dateTo)
+		{
+			//units = new HashSet<int>();		//Список подразделений (без повторов)
+			string from = dateFrom.Year + "-" + dateFrom.Month + "-" + dateFrom.Day;
+			string to = dateTo.Year + "-" + dateTo.Month + "-" + dateTo.Day;
+
+			Dictionary<int, Dictionary<int, KeyValuePair<DateTime, DateTime>>> persAndUnit 
+				= new Dictionary<int, Dictionary<int, KeyValuePair<DateTime, DateTime>>>();
+
+			//Выбираем сотрудников работающих в период с dateFrom по dateTo
+			string strCom = "select p.\"pk_personal_card\", u.\"pk_unit\", p.\"DataFrom\", p.\"DateTo\"" +
+				" from \"PeriodPosition\" p, \"Position\" d, \"Unit\" u " +
+				" where p.\"pk_position\" = d.\"pk_position\" and d.\"pk_unit\" = u.\"pk_unit\" and " +
+			"('" + from + "' <= p.\"DateTo\" or p.\"DateTo\" is null) and '" + to + "' >= p.\"DataFrom\"";	
+
+			NpgsqlCommand command = new NpgsqlCommand(strCom, connect.get_connect());
+			NpgsqlDataReader reader = command.ExecuteReader();
+			if (reader.HasRows)
+				foreach (DbDataRecord rec in reader)
+				{
+					int pers = rec.GetInt32(0);
+
+					if (charactPers.ContainsKey(pers))
+					{
+						DateTime dF = rec.GetDateTime(2);
+
+						DateTime dT = new DateTime(3000, 1, 1);
+						if (!rec.IsDBNull(3))
+							dT = rec.GetDateTime(3);
+
+						if (!persAndUnit.ContainsKey(pers))
+							persAndUnit.Add(pers, new Dictionary<int, KeyValuePair<DateTime, DateTime>>());
+						persAndUnit[pers].Add(rec.GetInt32(1), new KeyValuePair<DateTime, DateTime>(dF, dT));
+
+					}
+
+					//units.Add(rec.GetInt32(1));
+				}
+			reader.Close();
+
+
+
+			return persAndUnit;
 		}
 
 		//private List<int> work
 
 
-		private void gen_str_pers(int idString, int indPers, DateTime dateFrom, DateTime dateTo, bool writeToBd, bool writeToFile, StreamWriter sw)
+		private void gen_str_pers(int idString, int idPers, DateTime dateFrom, DateTime dateTo, bool writeToBd, bool writeToFile, StreamWriter sw)
 		{
 			Random rand = new Random();
 
@@ -265,7 +315,7 @@ namespace HRD_GenerateData
 				else
 				{
 					int k = rand.Next(1, 11);
-					switch (charactPers[indPers])
+					switch (charactPers[idPers])
 					{
 						case CharactPers.Bad:
 							if (k == 3)
