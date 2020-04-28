@@ -152,10 +152,12 @@ namespace HRD_GenerateData
 
 			Random rand = new Random();
 			int countPers = createDates.Count;
-			DateTime date = new DateTime(createDates[0].Year, createDates[0].Month, 1);
+			//DateTime date = new DateTime(createDates[0].Year, createDates[0].Month, 1);
+			DateTime date = new DateTime(2018, 8, 1) ;
 
 
-			DateTime endDate = new DateTime(2018, 8, 30);
+			//DateTime endDate = new DateTime(2018, 8, 30);
+			DateTime endDate = new DateTime(2018, 12, 31);
 
 			//Сгенерировать табели начиная с самого первого принятого сотрудника и до curDate
 			for (; date <= endDate; date = next_month(date))
@@ -245,6 +247,9 @@ namespace HRD_GenerateData
 						gen_str_pers(idString, pers, dateFrom, dateTo, writeToDb, writeToFile, sw);
 					}
 				}
+
+				Console.Write("=======\n");
+				Console.Write(date.ToString() + "\n");
 			}
 		}
 
@@ -281,7 +286,9 @@ namespace HRD_GenerateData
 
 						if (!persAndUnit.ContainsKey(pers))
 							persAndUnit.Add(pers, new Dictionary<int, KeyValuePair<DateTime, DateTime>>());
-						persAndUnit[pers].Add(rec.GetInt32(1), new KeyValuePair<DateTime, DateTime>(dF, dT));
+
+						if (!persAndUnit[pers].ContainsKey(rec.GetInt32(1)))
+							persAndUnit[pers].Add(rec.GetInt32(1), new KeyValuePair<DateTime, DateTime>(dF, dT));
 
 					}
 

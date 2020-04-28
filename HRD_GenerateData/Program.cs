@@ -27,14 +27,27 @@ namespace HRD_GenerateData
 			Connection connect = Connection.get_instance(login, pass);
 			//Connection connect = null;
 
+			string strForCom = "update \"PersonalCard\" SET \"Work_kind\" = 'Основная', \"Index_fact\" = '123456', \"Index_real\" = '123456'";
+			NpgsqlCommand command = new NpgsqlCommand(strForCom, connect.get_connect());
+			command.ExecuteNonQuery();
 
 
+			//GenOrders gord = new GenOrders(connect);
+			//gord.clear();
+
+			//GenTimeTracking gtt = new GenTimeTracking(connect);
+			//gtt.clear();
 
 			//GenPersonalCard gpc = new GenPersonalCard(connect);
 			//gpc.clear();
 			//gpc.execute();
 
-			//GenTimeTracking gtt = new GenTimeTracking(connect);
+			
+
+			//gord.execute();
+
+
+			//gtt.execute();
 
 			//HashSet<int> units;
 			//Dictionary<int, List<int>> persAndUnits = gtt.get_pers_period(new DateTime(2019, 1, 22), new DateTime(2019, 7, 17), out units);
@@ -49,17 +62,14 @@ namespace HRD_GenerateData
 			//}
 			//sw.Close();
 
-			//gtt.clear();
-			//gtt.execute();
 
-			//GenOrders gord = new GenOrders(connect);
-			//gord.clear();
-			//gord.execute();
+
+
 
 			//GenHandbooks gh = new GenHandbooks(connect);
 			//gh.addMarkTimeTracking();
 
-			(new Test(connect)).ecec_read();
+			//(new Test(connect)).ecec_read();
 			//(new Test(connect)).get_all_tables();
 			//(new Test(connect)).correct_db();
 

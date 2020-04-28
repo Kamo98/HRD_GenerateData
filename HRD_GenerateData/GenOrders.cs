@@ -19,6 +19,7 @@ namespace HRD_GenerateData
 
 		Random rand = new Random();
 
+		//int limitPersinal = 16;
 		int limitPersinal = 128;
 		int offsetPersonal = 0;
 
@@ -353,6 +354,14 @@ namespace HRD_GenerateData
 			command.ExecuteNonQuery();
 
 
+		}
+
+
+		private void updatePC ()
+		{
+			string strForCom = "update \"PersonalCard\" SET \"Work_kind\" = 'Основная', \"Index_fact\" = '123456'";
+			NpgsqlCommand command = new NpgsqlCommand(strForCom, connect.get_connect());
+			command.ExecuteNonQuery();
 		}
 
 		//Получение id сотрудников и дат создания их карточек

@@ -66,16 +66,7 @@ namespace HRD_GenerateData
 			countPeople = 4;
 		}
 
-		public void clear ()
-		{
-			string strForCom = "delete from \"PersonalCard\"";
-
-			NpgsqlCommand command = new NpgsqlCommand(
-				strForCom,
-				connect.get_connect());
-
-			command.ExecuteNonQuery();
-		}
+		
 
 		public void execute ()
 		{
@@ -87,7 +78,7 @@ namespace HRD_GenerateData
 			bool writeToFile = true;
 			bool writeLog = true;
 
-			string queryIns = "insert into \"PersonalCard\"" +
+			string queryIns = "insert into \"PersonalCard\" " +
 						"(\"surname\"," +
 						" \"name\"," +
 						" \"otchestvo\", " +
@@ -110,7 +101,12 @@ namespace HRD_GenerateData
 						"\"Phone\"," +
 						"\"Birth_place\"," +
 						" \"Creation_date\", " +
-						"\"Gender\")" +
+						" \"Military_profile\", " +
+						" \"Military_code\", " +
+						" \"Military_name\", " +
+						" \"Military_status\", " +
+						" \"Military_cancel\", " +
+						" \"Gender\") " +
 						" values (";
 
 
@@ -143,20 +139,36 @@ namespace HRD_GenerateData
 
 						get_persinal_data(rand, ref strComIns, dateCreating);
 
-						strComIns += "'М')";
+						strComIns += "'М') RETURNING \"pk_personal_card\"";
 
 						if (writeToFile)
 							sw.Write(strComIns + "\n");
 
 						if (writeToDb)
 						{
+							int pk_personal_card = 1;
+
 							NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
-							int count = command.ExecuteNonQuery();
-							if (writeLog)
-								if (count == 1)
-									Console.Out.Write("Строка вставлена\n");
-								else
-									Console.Out.Write("Строка НЕ вставлена\n");
+
+							NpgsqlDataReader reader2 = command.ExecuteReader();
+							if (reader2.HasRows) // если есть данные
+							{
+								while (reader2.Read()) // построчно считываем данные
+								{
+									object pk = reader2.GetValue(0);
+									pk_personal_card = Convert.ToInt32(pk);
+
+								}
+							}
+							reader2.Close();
+
+							set_cards(rand, pk_personal_card);
+							//int count = command.ExecuteNonQuery();
+							//if (writeLog)
+							//	if (count == 1)
+							//		Console.Out.Write("Строка вставлена\n");
+							//	else
+							//		Console.Out.Write("Строка НЕ вставлена\n");
 						}
 						
 					}
@@ -180,26 +192,196 @@ namespace HRD_GenerateData
 
 						get_persinal_data(rand, ref strComIns, dateCreating);
 
-						strComIns += "'Ж')";
+						strComIns += "'Ж') RETURNING \"pk_personal_card\"";
 
 						if (writeToFile)
 							sw.Write(strComIns + "\n");
 
 						if (writeToDb)
 						{
+							int pk_personal_card = 1;
+
 							NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
-							int count = command.ExecuteNonQuery();
-							if (writeLog)
-								if (count == 1)
-									Console.Out.Write("Строка вставлена\n");
-								else
-									Console.Out.Write("Строка НЕ вставлена\n");
+
+							NpgsqlDataReader reader2 = command.ExecuteReader();
+							if (reader2.HasRows) // если есть данные
+							{
+								while (reader2.Read()) // построчно считываем данные
+								{
+									object pk = reader2.GetValue(0);
+									pk_personal_card = Convert.ToInt32(pk);
+
+								}
+							}
+							reader2.Close();
+
+							set_cards(rand, pk_personal_card);
+
+							//NpgsqlCommand command = new NpgsqlCommand(strComIns, connect.get_connect());
+							//int count = command.ExecuteNonQuery();
+							//if (writeLog)
+							//	if (count == 1)
+							//		Console.Out.Write("Строка вставлена\n");
+							//	else
+							//		Console.Out.Write("Строка НЕ вставлена\n");
 						}
 					}
 			sw.Close();
 
 		}
 
+		public void clear()
+		{
+			string strForCom = "delete from \"card-citizenship\"";
+
+			NpgsqlCommand command = new NpgsqlCommand(
+				strForCom,
+				connect.get_connect());
+
+			command.ExecuteNonQuery();
+
+			strForCom = "delete from \"lang-card\"";
+
+			command = new NpgsqlCommand(
+				strForCom,
+				connect.get_connect());
+
+			command.ExecuteNonQuery();
+
+			strForCom = "delete from \"card-education\"";
+
+			command = new NpgsqlCommand(
+				strForCom,
+				connect.get_connect());
+
+			command.ExecuteNonQuery();
+
+			strForCom = "delete from \"Characteristic\"";
+
+			command = new NpgsqlCommand(
+				strForCom,
+				connect.get_connect());
+
+			command.ExecuteNonQuery();
+			
+
+			strForCom = "delete from \"PersonalCard\"";
+
+			command = new NpgsqlCommand(
+				strForCom,
+				connect.get_connect());
+
+			command.ExecuteNonQuery();
+		}
+
+		private void set_cards(Random rand, int id_pers)
+		{
+			//Гражданство
+			//Добавим гражданство в карточку гражданства
+			string SqlExpression101 = "INSERT INTO \"card-citizenship\" (\"pk_sitizenship\",\"pk_personal_card\") " +
+			"VALUES (@pk_citizenship,@pk_personal_card)";
+
+
+			NpgsqlCommand command = new NpgsqlCommand(SqlExpression101, connect.get_connect());
+			// создаем параметры и добавляем их к команде
+			NpgsqlParameter Param1 = new NpgsqlParameter("@pk_citizenship", 294);
+			command.Parameters.Add(Param1);
+			NpgsqlParameter Param2 = new NpgsqlParameter("@pk_personal_card", id_pers);
+			command.Parameters.Add(Param2);
+			int number = command.ExecuteNonQuery();
+
+
+
+			//Языки
+			int kLang = rand.Next(1, 3);
+
+
+			string SqlExpression2 = "INSERT INTO \"lang-card\" (\"pk_language\",\"pk_personal_card\",\"pk_degree_language\") " +
+								"VALUES (@pk_language,@pk_personal_card,@pk_degree_language)";
+
+			command = new NpgsqlCommand(SqlExpression2, connect.get_connect());
+			// создаем параметры и добавляем их к команде
+			Param1 = new NpgsqlParameter("@pk_language", 199);
+			command.Parameters.Add(Param1);
+			Param2 = new NpgsqlParameter("@pk_personal_card", id_pers);
+			command.Parameters.Add(Param2);
+			NpgsqlParameter Param3 = new NpgsqlParameter("@pk_degree_language", 3);
+			command.Parameters.Add(Param3);
+			command.ExecuteNonQuery();
+
+			if (kLang >= 1)
+			{
+				command = new NpgsqlCommand(SqlExpression2, connect.get_connect());
+				// создаем параметры и добавляем их к команде
+				Param1 = new NpgsqlParameter("@pk_language", 171);
+				command.Parameters.Add(Param1);
+				Param2 = new NpgsqlParameter("@pk_personal_card", id_pers);
+				command.Parameters.Add(Param2);
+				Param3 = new NpgsqlParameter("@pk_degree_language", 2);
+				command.Parameters.Add(Param3);
+				command.ExecuteNonQuery();
+			}
+
+			if (kLang == 2)
+			{
+				command = new NpgsqlCommand(SqlExpression2, connect.get_connect());
+				// создаем параметры и добавляем их к команде
+				Param1 = new NpgsqlParameter("@pk_language", 258);
+				command.Parameters.Add(Param1);
+				Param2 = new NpgsqlParameter("@pk_personal_card", id_pers);
+				command.Parameters.Add(Param2);
+				Param3 = new NpgsqlParameter("@pk_degree_language", 1);
+				command.Parameters.Add(Param3);
+				command.ExecuteNonQuery();
+			}
+
+			//Образование
+
+			string SqlExpression3 = "INSERT INTO \"card-education\" (\"pk_education\",\"pk_personal_card\",\"pk_specialty\"," +
+							   "\"pk_nstitution\",\"document_name\",\"serial_number\",\"Year\") " +
+							   "VALUES (@pk_education,@pk_personal_card,@pk_specialty,@pk_nstitution,@document_name,@serial_number,@Year)";
+
+			command = new NpgsqlCommand(SqlExpression3, connect.get_connect());
+			// создаем параметры и добавляем их к команде
+			Param1 = new NpgsqlParameter("@pk_education", 3);
+			command.Parameters.Add(Param1);
+			Param2 = new NpgsqlParameter("@pk_personal_card", id_pers);
+			command.Parameters.Add(Param2);
+			Param3 = new NpgsqlParameter("@pk_specialty", rand.Next(2, 617));
+			command.Parameters.Add(Param3);
+			NpgsqlParameter Param4 = new NpgsqlParameter("@pk_nstitution", rand.Next(2, 47));
+			command.Parameters.Add(Param4);
+			NpgsqlParameter Param5 = new NpgsqlParameter("@document_name", "Диплом");
+			command.Parameters.Add(Param5);
+			NpgsqlParameter Param6 = new NpgsqlParameter("@serial_number", "1234-5678");
+			command.Parameters.Add(Param6);
+			NpgsqlParameter Param7 = new NpgsqlParameter("@Year", 2000);
+			command.Parameters.Add(Param7);
+			command.ExecuteNonQuery();
+
+
+			//Хар-ка
+
+			string SqlExpression4 = "INSERT INTO \"Characteristic\" (\"date\",\"characteristic\",\"fileReference\"," +
+								"\"pk_personal_card\") " +
+								"VALUES (@date,@characteristic,@fileReference,@pk_personal_card)";
+
+			command = new NpgsqlCommand(SqlExpression4, connect.get_connect());
+			// создаем параметры и добавляем их к команде
+			Param1 = new NpgsqlParameter("@date", new DateTime(2018, 5, 12));
+			command.Parameters.Add(Param1);
+			Param2 = new NpgsqlParameter("@characteristic", "Характеристика сотрудника");
+			command.Parameters.Add(Param2);
+			Param3 = new NpgsqlParameter("@fileReference", "C:\\KADRY_CHARACTERISTIC");
+			command.Parameters.Add(Param3);
+			Param4 = new NpgsqlParameter("@pk_personal_card", id_pers);
+			command.Parameters.Add(Param4);
+			command.ExecuteNonQuery();
+
+			
+
+
+		}
 
 		private void get_persinal_data(Random rand, ref string strComIns, DateTime dateCreating)
 		{
@@ -255,7 +437,7 @@ namespace HRD_GenerateData
 			string phone = "+7" + rand.Next(11111, 99999) + rand.Next(11111, 99999);
 			strComIns += "'" + phone + "', ";
 
-			string placeOfBirth = addressRegistr;
+			string placeOfBirth = "г. Барнаул";
 			strComIns += "'" + placeOfBirth + "', ";
 			
 
@@ -266,7 +448,11 @@ namespace HRD_GenerateData
 			//int yearCreate = yearBirth + 23;
 			strComIns += "'" + dateCreating.Year + "-" + dateCreating.Month + "-" + dateCreating.Day + "', ";
 
-
+			strComIns += "'Профиль', ";
+			strComIns += "'Кодовое обозначение ВУС', ";
+			strComIns += "'Военный комиссариат по Советскому и Алтайскому районам', ";
+			strComIns += "'Состоит', ";
+			strComIns += "'-', ";
 		}
 	}
 }

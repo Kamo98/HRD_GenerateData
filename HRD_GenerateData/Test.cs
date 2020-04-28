@@ -40,7 +40,7 @@ namespace HRD_GenerateData
 			//string strCom = "select * from \"Unit\" u, \"Position\" p where p.\"pk_unit\" = '12' and u.\"pk_unit\" = p.\"pk_unit\"";
 
 			//string strCom = "select \"pk_personal_card\", \"Creation_date\" from \"PersonalCard\"";
-
+			string strCom = "select \"pk_personal_card\", \"Creation_date\" from \"PersonalCard\"";
 			///
 
 			//string strCom = "select \"pk_personal_card\", \"DataFrom\", \"DateTo\", \"pk_move_order\", t.\"Name\", \"pk_fire_order_string\", d.\"Name\", d.\"pk_unit\", u.\"Name\" " +
@@ -48,13 +48,47 @@ namespace HRD_GenerateData
 			//	" where d.\"pk_position\" = p.\"pk_position\" and p.\"pk_move_order\" = s.\"pk_string_order\" and o.\"pk_order\" = s.\"pk_order\" " +
 			//	" and t.\"pk_type_order\" = o.\"pk_type_order\" and d.\"pk_unit\" = u.\"pk_unit\" and \"pk_personal_card\" = '1342'";
 
-			string strCom = "select c.\"surname\", c.\"name\", c.\"otchestvo\", \"DataFrom\", \"DateTo\",  t.\"Name\", d.\"Name\", u.\"Name\" " +
-				" from \"PeriodPosition\" p, \"Position\" d, \"String_order\" s, \"Order\" o, \"TypeOrder\" t, \"Unit\" u, \"PersonalCard\" c" +
-				" where c.\"pk_personal_card\" = p.\"pk_personal_card\" and d.\"pk_position\" = p.\"pk_position\" and p.\"pk_move_order\" = s.\"pk_string_order\" and o.\"pk_order\" = s.\"pk_order\" " +
-				" and t.\"pk_type_order\" = o.\"pk_type_order\" and d.\"pk_unit\" = u.\"pk_unit\" and p.\"pk_personal_card\" = '1342'";
+			//string strCom = "select c.\"surname\", c.\"name\", c.\"otchestvo\", \"DataFrom\", \"DateTo\",  t.\"Name\", d.\"Name\", u.\"Name\" " +
+			//	" from \"PeriodPosition\" p, \"Position\" d, \"String_order\" s, \"Order\" o, \"TypeOrder\" t, \"Unit\" u, \"PersonalCard\" c" +
+			//	" where c.\"pk_personal_card\" = p.\"pk_personal_card\" and d.\"pk_position\" = p.\"pk_position\" and p.\"pk_move_order\" = s.\"pk_string_order\" and o.\"pk_order\" = s.\"pk_order\" " +
+			//	" and t.\"pk_type_order\" = o.\"pk_type_order\" and d.\"pk_unit\" = u.\"pk_unit\" and p.\"pk_personal_card\" = '1342'";
 
 
-			//string strCom = "select * from \"pg_user\"";
+
+
+			//Для поиска сотрудников
+			//string strCom = "select c.\"pk_personal_card\", c.\"surname\", c.\"name\", c.\"otchestvo\", u.\"Name\", d.\"Name\" " +
+			//	" from \"PersonalCard\" c, \"PeriodPosition\" p, \"Position\" d, \"Unit\" u" +
+			//	" where c.\"pk_personal_card\" = p.\"pk_personal_card\" " +
+			//	" and d.\"pk_position\" = p.\"pk_position\" " +
+			//	" and u.\"pk_unit\" = d.\"pk_unit\" " +
+			//	" and p.\"DateTo\" is null " +
+			//	" and c.\"surname\" = 'Сергеев' and c.\"name\" = 'Сергей' and c.\"otchestvo\" = 'Сергеевич'";
+
+
+			//string strCom = "select c.\"pk_personal_card\", c.\"surname\", c.\"name\", c.\"otchestvo\", u.\"Name\", d.\"Name\" " +
+			//	" from \"PersonalCard\" c, \"PeriodPosition\" p, \"Position\" d, \"Unit\" u" +
+			//	" where c.\"pk_personal_card\" = p.\"pk_personal_card\" " +
+			//	" and d.\"pk_position\" = p.\"pk_position\" " +
+			//	" and u.\"pk_unit\" = d.\"pk_unit\" " +
+			//	" and p.\"DateTo\" is null " +
+			//	" and p.\"pk_position\" = '10'";
+
+			//string strCom = "select m.\"ShortName\", count(f.\"pk_fact\")" +
+			//			" from \"TimeTracking\" t, \"StringTimeTracking\" s, \"Fact\" f, \"MarkTimeTracking\" m, \"Unit\" u" +
+			//			" where t.\"pk_time_tracking\" = s.\"pk_time_tracking\" " +
+			//			" and s.\"pk_string_time_tracking\" = f.\"pk_string_time_tracking\"" +
+			//			" and f.\"pk_mark_time_tracking\" = m.\"pk_mark_time_tracking\" " +
+			//			" and u.\"pk_unit\" = t.\"pk_unit\" " +
+			//			" and t.\"date_sostav\" = '2018-2-28' " +
+			//			" and u.\"Name\" = 'Терапевтическое отделение' " +
+			//			" group by m.\"ShortName\""; ;
+
+
+
+
+
+			//string strCom = "select * from \"Institution\"";
 
 			//string strCom = "select c.\"pk_personal_card\", c.\"surname\", c.\"name\", c.\"otchestvo\", p.\"pk_fire_order_string\", o.\"data_order\"" +
 			//	" from \"PeriodPosition\" p, \"PersonalCard\" c, \"String_order\" s, \"Order\" o" +
